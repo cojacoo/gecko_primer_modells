@@ -1265,7 +1265,8 @@ elif "Schritt 4" in schritt:
             
             fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
             
-            farben = plt.cm.viridis(np.linspace(0, 1, n_trajektorien))
+            import matplotlib.cm as cm
+            farben = cm.get_cmap('viridis')(np.linspace(0, 1, n_trajektorien))
             
             t = np.linspace(0, 200, 800)
             
@@ -1475,10 +1476,10 @@ elif "Schritt 5" in schritt:
             K = st.slider("Tragfähigkeit K", 50, 200, 100, 10)
             
             st.markdown("**🦊 Füchse (Räuber):**")
-            a = st.slider("Angriffsrate a", 1.0, 10.0, 5.0, 0.5)
-            h = st.slider("Handhabungszeit h", 5, 50, 20, 5)
-            e = st.slider("Umwandlungseffizienz e", 0.1, 0.5, 0.3, 0.05)
-            m = st.slider("Mortalität m (1/Jahr)", 0.1, 1.0, 0.4, 0.1)
+            a = st.slider("Angriffsrate a", 0.01, 0.5, 0.1, 0.01)
+            h = st.slider("Handhabungszeit h (Tage)", 0.1, 5.0, 1.0, 0.1)
+            e = st.slider("Umwandlungseffizienz e", 0.01, 0.2, 0.05, 0.01)
+            m = st.slider("Mortalität m (1/Jahr)", 0.05, 0.5, 0.15, 0.05)
             
             st.markdown("**🎮 Anfangsbedingungen:**")
             N0 = st.slider("Anfangs-Kaninchen N₀", 10, 100, 50, 10)
@@ -1498,8 +1499,11 @@ elif "Schritt 5" in schritt:
         with col2:
             def rauber_beute(y, t):
                 N, P = y
-                dN = r*N*(1 - N/K) - (a*N)/(1 + a*h*N) * P
-                dP = e*(a*N)/(1 + a*h*N) * P - m*P
+                # Typ II funktionelle Reaktion: f(N) = a*N/(1 + a*h*N)
+                # Korrekte Implementierung mit realistischen Parametern
+                f_N = (a * N) / (1 + a * h * N)  # h in Jahren, N dimensionlos
+                dN = r * N * (1 - N/K) - f_N * P
+                dP = e * f_N * P - m * P
                 return [dN, dP]
             
             t = np.linspace(0, sim_zeit, 1000)
