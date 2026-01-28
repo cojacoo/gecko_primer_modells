@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from scipy.integrate import odeint
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.linear_model import LinearRegression
@@ -1265,7 +1266,6 @@ elif "Schritt 4" in schritt:
             
             fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
             
-            import matplotlib.cm as cm
             farben = cm.get_cmap('viridis')(np.linspace(0, 1, n_trajektorien))
             
             t = np.linspace(0, 200, 800)
@@ -1573,25 +1573,45 @@ elif "Schritt 5" in schritt:
         </div>
         """.format(e*100, 1/e), unsafe_allow_html=True)
         
-        # Stabilitätsanalyse
-        if sol[-1, 0] < 0.01 or sol[-1, 1] < 0.01:
-            st.warning("⚠️ Eine Population ging aus! Parameter anpassen.")
+        # Stabilitätsanalyse mit besseren Grenzwerten
+        if sol[-1, 0] < 1 or sol[-1, 1] < 0.1:
+            st.error(f"❌ **Population ausgestorben!**")
+            if sol[-1, 0] < 1:
+                st.write("- Kaninchen: Ausgestorben")
+            if sol[-1, 1] < 0.1:
+                st.write("- Füchse: Ausgestorben")
+            st.write("**Lösung:** Parameter anpassen:")
+            st.write("- Höhere Beute-Tragfähigkeit K")
+            st.write("- Geringere Räuber-Mortalität m") 
+            st.write("- Höhere Umwandlungseffizienz e")
         else:
             # Prüfe ob Oszillationen abklingen
             if len(beute_spitzen) > 2:
                 amplituden = sol[beute_spitzen, 0]
                 if len(amplituden) > 2 and amplituden[-1] < amplituden[0] * 0.9:
                     st.success(f"""
-                    ✅ **Dämpfende Oszillationen** → Konvergiert zu stabilem Gleichgewicht
+                    ✅ **Stabiles Gleichgewicht erreicht**
                     
-                    Endzustand: ~{sol[-1, 0]:.0f} Kaninchen, ~{sol[-1, 1]:.0f} Füchse
+                    **Endzustand:** ~{sol[-1, 0]:.0f} Kaninchen, ~{sol[-1, 1]:.0f} Füchse
+                    
+                    Das System konvergiert zu einem stabilen Gleichgewicht.
                     """)
                 else:
-                    st.info("""
-                    🔄 **Anhaltende Oszillationen** (Grenzzyklus)
+                    st.info(f"""
+                    🔄 **Stabile Oszillationen (Grenzzyklus)**
                     
-                    Populationen zyklieren weiter - typisch für mittlere Parameter!
+                    Die Populationen zyklieren stabil mit:
+                    - Beute: {sol[beute_spitzen[-1], 0]:.0f} (Maximum)
+                    - Räuber: {sol[rauber_spitzen[-1], 1]:.0f} (Maximum)
                     """)
+            else:
+                st.success(f"""
+                ✅ **Stabiler Zustand**
+                
+                **Endzustand:** ~{sol[-1, 0]:.0f} Kaninchen, ~{sol[-1, 1]:.0f} Füchse
+                
+                Populationen haben sich stabilisiert.
+                """)
     
     with tab3:
         st.subheader("🌍 Biotisch-Abiotische Kopplung")
