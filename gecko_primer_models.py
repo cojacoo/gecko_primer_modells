@@ -1477,7 +1477,7 @@ elif "Schritt 5" in schritt:
             
             st.markdown("**🦊 Füchse (Räuber):**")
             a = st.slider("Angriffsrate a", 0.01, 0.5, 0.1, 0.01)
-            h = st.slider("Handhabungszeit h (Tage)", 0.1, 5.0, 1.0, 0.1)
+            h = st.slider("Handhabungszeit h (Jahre)", 0.01, 0.5, 0.1, 0.01)
             e = st.slider("Umwandlungseffizienz e", 0.01, 0.2, 0.05, 0.01)
             m = st.slider("Mortalität m (1/Jahr)", 0.05, 0.5, 0.15, 0.05)
             
@@ -1615,127 +1615,239 @@ elif "Schritt 5" in schritt:
     
     with tab3:
         st.subheader("🌍 Biotisch-Abiotische Kopplung")
-        
+
         st.markdown("""
         <div class="context-box">
-        <strong>🌿💧 Alternative Perspektive: Pflanze-Wasser Interaktion</strong>
-        <p>Räuber-Beute Prinzipien gelten auch für <strong>biotisch-abiotische</strong> Interaktionen!</p>
-        <p><strong>Das System:</strong></p>
-        <ul>
-        <li><strong>Pflanzen (biotisch):</strong> Wachsen mit Wasser</li>
-        <li><strong>Bodenfeuchte (abiotisch):</strong> Verbraucht durch Pflanzen, aufgefüllt durch Regen</li>
-        </ul>
-        <p><strong>Analog zu Räuber-Beute:</strong></p>
-        <ul>
-        <li>Pflanzen = "Räuber" (konsumieren Wasser)</li>
-        <li>Wasser = "Beute" (limitierte Ressource)</li>
-        <li>Regen = "Beute-Wachstum" (Nachschub)</li>
-        </ul>
+        <strong>🌿💧 Pflanze-Wasser: mathematisch identisch mit Rosenzweig-MacArthur!</strong>
+        <p>Dieses System folgt <em>denselben Gleichungen</em> — nur die Variablen heißen anders:</p>
+        <table style="width:100%; border-collapse:collapse; margin:8px 0; font-size:0.9em">
+        <tr style="background:#cce5f0"><th style="padding:4px 8px; text-align:left">Räuber-Beute (Tab 2)</th><th style="padding:4px 8px; text-align:left">Pflanze-Wasser (Tab 3)</th></tr>
+        <tr><td style="padding:3px 8px">Beute H → r·H·(1−H/K)</td><td style="padding:3px 8px">Bodenfeuchte W → r_W·W·(1−W/W_max)</td></tr>
+        <tr style="background:#f0f0f0"><td style="padding:3px 8px">Prädation a·H·P / (1+a·T_h·H)</td><td style="padding:3px 8px">Transpiration a_W·W·B / (1+a_W·h_W·W)</td></tr>
+        <tr><td style="padding:3px 8px">Räuber P → e·(…) − m·P</td><td style="padding:3px 8px">Biomasse B → ε·(…) − m·B</td></tr>
+        <tr style="background:#f0f0f0"><td style="padding:3px 8px">Koexistenz: e &gt; m·T_h</td><td style="padding:3px 8px">Koexistenz: ε &gt; m·h_W</td></tr>
+        </table>
+        <p><strong>Saisonalität</strong> (Amplitude A) erzeugt erzwungene Jahreszyklen.
+        Geringer Bodenspeicher W_max erzeugt autonome Grenzzyklen — das
+        <em>Paradox der Erschöpfung</em> (analog zum Paradox of Enrichment in RM).</p>
         </div>
         """, unsafe_allow_html=True)
         
         col1, col2 = st.columns([1, 2])
-        
+
         with col1:
             st.markdown("**🎚️ Parameter:**")
-            
-            st.markdown("**💧 Wasser:**")
-            P_regen = st.slider("Niederschlag P (mm/Monat)", 20, 150, 80, 10)
-            
-            st.markdown("**🌱 Pflanzen:**")
-            r_pflanze = st.slider("Wachstumsrate (1/Monat)", 0.1, 0.8, 0.3, 0.05)
-            m_pflanze = st.slider("Mortalität (1/Monat)", 0.05, 0.3, 0.1, 0.05)
-            K_bio = st.slider("Max Biomasse", 50, 200, 100, 10)
-            
-            st.markdown("**💧🌱 Kopplung:**")
-            ET_koeff = st.slider("Transpirationskoeffizient", 0.5, 3.0, 1.5, 0.1)
-            wasser_schwelle = st.slider("Wasser-Stressschwelle (mm)", 20, 100, 50, 10)
-            
-            B0 = st.slider("Anfangs-Biomasse", 10, 80, 40, 10)
-            W0 = st.slider("Anfangs-Bodenfeuchte (mm)", 30, 150, 80, 10)
-        
+
+            st.markdown("**💧 Wasser (= Beute-Analog):**")
+            r_W = st.slider("Auffüllrate r_W (analog: r)", 0.3, 2.0, 1.3, 0.1)
+            W_max = st.slider("Bodenspeicher W_max (analog: K) [mm]", 60, 250, 150, 10)
+
+            st.markdown("**🌱 Pflanzen (= Räuber-Analog):**")
+            eps_bw = st.slider("Wassernutzungseff. ε (analog: e)", 0.02, 0.20, 0.09, 0.01)
+            m_B = st.slider("Mortalität m (1/Monat)", 0.02, 0.30, 0.12, 0.02)
+
+            st.markdown("**🔗 Kopplung (= Funkt. Reaktion):**")
+            a_W = st.slider("Aufnahmerate a_W (analog: a)", 0.03, 0.30, 0.10, 0.01)
+            h_W = st.slider("Sättigungsparameter h_W (analog: T_h)", 0.1, 2.0, 0.5, 0.1)
+
+            st.markdown("**🌦️ Saisonalität:**")
+            A_seas = st.slider("Amplitude A (0=konstant → 0.7=stark)", 0.0, 0.7, 0.3, 0.1)
+
+            st.markdown("**🎮 Anfangsbedingungen:**")
+            B0_bw = st.slider("Anfangs-Biomasse B₀", 5, 100, 20, 5)
+            W0_raw_bw = st.slider("Anfangs-Bodenfeuchte W₀ (mm)", 10, 200, 70, 10)
+            W0_bw = min(W0_raw_bw, W_max)
+
+        # ── Analytical equilibrium (exact, no solver needed) ─────────────────
+        W_star_bw = None
+        B_star_bw = None
+        W_hump_bw = None
+        cond_bw = eps_bw - m_B * h_W
+        if cond_bw > 0:
+            W_star_raw = m_B / (a_W * cond_bw)
+            if 0 < W_star_raw < W_max:
+                W_star_bw = W_star_raw
+                B_star_bw = max(0.0, r_W * (1.0 - W_star_bw/W_max)
+                                * (1.0 + a_W * h_W * W_star_bw) / a_W)
+                W_hump_bw = W_max / 2.0 - 1.0 / (2.0 * a_W * h_W)
+                if W_hump_bw > 0 and W_star_bw < W_hump_bw:
+                    regime_bw = "✅ Stabiles Gleichgewicht (gedämpfte Spirale)"
+                    regime_color_bw = "#d4edda"
+                else:
+                    regime_bw = "🔄 Grenzzyklus"
+                    regime_color_bw = "#fff3cd"
+            else:
+                regime_bw = "❌ Arid: W* außerhalb des Bodenspeichers"
+                regime_color_bw = "#f8d7da"
+        else:
+            regime_bw = "❌ Arid: ε < m·h_W (Koexistenzbedingung verletzt)"
+            regime_color_bw = "#f8d7da"
+
+        with col1:
+            eq_info = ""
+            if W_star_bw is not None:
+                eq_info = f"W* = {W_star_bw:.1f} mm &nbsp;|&nbsp; B* ≈ {B_star_bw:.1f}"
+                if W_hump_bw is not None:
+                    eq_info += f"<br>Isoklin-Hump W_hump = {max(0.0, W_hump_bw):.1f} mm"
+            st.markdown(f"""
+            <div style="background:{regime_color_bw}; padding:10px; border-radius:8px; margin-top:6px">
+            <strong>{regime_bw}</strong>
+            {"<br>" + eq_info if eq_info else ""}
+            </div>
+            """, unsafe_allow_html=True)
+
         with col2:
-            def pflanze_wasser(y, t):
-                B, W = y  # Biomasse, Wasser
-                
-                # Wasser-Stress-Faktor
-                wasser_faktor = min(1.0, W / wasser_schwelle)
-                
-                # Pflanzen-Wachstum (begrenzt durch Wasser UND Tragfähigkeit)
-                dB = r_pflanze * B * (1 - B/K_bio) * wasser_faktor - m_pflanze * B
-                
-                # Wasser-Dynamik (Regen - ET)
-                ET = ET_koeff * B * wasser_faktor
-                dW = P_regen - ET
-                
+            def pflanze_wasser_rm(y, t):
+                B_v, W_v = y
+                W_c = float(np.clip(W_v, 0.0, W_max))
+                B_c = float(max(0.0, B_v))
+
+                # Type II functional response — exact RM analog
+                # f(W) = a_W·W / (1 + a_W·h_W·W)
+                f_bw = a_W * W_c / (1.0 + a_W * h_W * W_c)
+
+                # Seasonal recharge rate
+                r_t = r_W * (1.0 + A_seas * np.sin(2.0 * np.pi * t / 12.0))
+
+                # dW = r_W·W·(1−W/W_max) − a_W·W·B/(1+a_W·h_W·W)
+                dW = r_t * W_c * (1.0 - W_c / W_max) - f_bw * B_c
+                # dB = ε·a_W·W·B/(1+a_W·h_W·W) − m·B
+                dB = eps_bw * f_bw * B_c - m_B * B_c
+
                 return [dB, dW]
-            
-            t = np.linspace(0, 120, 1000)  # 10 Jahre in Monaten
-            sol = odeint(pflanze_wasser, [B0, W0], t)
-            
-            # Verhindere negative Werte
-            sol = np.maximum(sol, 0)
-            
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
-            
-            # Zeitreihen
-            ax1.plot(t/12, sol[:, 0], 'g-', lw=2.5, label='Pflanzen-Biomasse', alpha=0.8)
-            ax1_twin = ax1.twinx()
-            ax1_twin.plot(t/12, sol[:, 1], 'b-', lw=2.5, label='Bodenfeuchte', alpha=0.8)
-            
-            ax1.set_xlabel('Zeit (Jahre)', fontsize=12)
-            ax1.set_ylabel('Biomasse', fontsize=12, color='g')
-            ax1_twin.set_ylabel('Bodenfeuchte (mm)', fontsize=12, color='b')
-            ax1.set_title('Biotisch-Abiotische Kopplung', fontsize=14, fontweight='bold')
-            ax1.tick_params(axis='y', labelcolor='g')
-            ax1_twin.tick_params(axis='y', labelcolor='b')
-            ax1.grid(alpha=0.3)
-            
-            # Legende kombinieren
-            linien1, labels1 = ax1.get_legend_handles_labels()
-            linien2, labels2 = ax1_twin.get_legend_handles_labels()
-            ax1.legend(linien1 + linien2, labels1 + labels2, loc='upper right')
-            
-            # Phasenebene
-            ax2.plot(sol[:, 1], sol[:, 0], 'purple', lw=2.5, alpha=0.7)
-            ax2.scatter([W0], [B0], s=200, c='green', marker='o',
-                       edgecolor='black', linewidth=2, zorder=10, label='Start')
-            ax2.scatter([sol[-1, 1]], [sol[-1, 0]], s=300, c='red', marker='*',
-                       edgecolor='black', linewidth=2, zorder=10, label='Ende')
-            
-            ax2.axvline(wasser_schwelle, ls='--', color='blue', alpha=0.5, label='Wasser-Stressschwelle')
-            
-            ax2.set_xlabel('Bodenfeuchte (mm)', fontsize=12)
-            ax2.set_ylabel('Pflanzen-Biomasse', fontsize=12)
-            ax2.set_title('Phasenraum: Wasser-Vegetation Dynamik', fontsize=14, fontweight='bold')
-            ax2.legend(fontsize=10)
-            ax2.grid(alpha=0.3)
-            
+
+            t_bw = np.linspace(0, 120, 1200)
+            sol_bw = odeint(pflanze_wasser_rm, [B0_bw, W0_bw], t_bw,
+                            rtol=1e-6, atol=1e-9)
+            sol_bw[:, 0] = np.maximum(sol_bw[:, 0], 0.0)
+            sol_bw[:, 1] = np.clip(sol_bw[:, 1], 0.0, W_max)
+
+            # ── Isoclines (mean conditions A=0) ─────────────────────────────
+            W_arr = np.linspace(0.2, W_max * 1.02, 600)
+            # W-isocline: dW/dt=0, W>0 → divide by W:
+            # r_W·(1−W/W_max) = a_W·B/(1+a_W·h_W·W)
+            B_iso_W = r_W * (1.0 - W_arr / W_max) * (1.0 + a_W * h_W * W_arr) / a_W
+            B_iso_W = np.where(B_iso_W < 0, np.nan, B_iso_W)
+
+            # ── Plots ────────────────────────────────────────────────────────
+            fig_bw, (ax1_bw, ax2_bw) = plt.subplots(1, 2, figsize=(14, 6))
+
+            # Left: Time series
+            ax1_bw.plot(t_bw / 12, sol_bw[:, 0], color='darkgreen', lw=2.5,
+                        label='Biomasse B', alpha=0.85)
+            ax1r_bw = ax1_bw.twinx()
+            ax1r_bw.plot(t_bw / 12, sol_bw[:, 1], color='steelblue', lw=2.5,
+                         label='Bodenfeuchte W (mm)', alpha=0.85)
+            ax1_bw.set_ylim(bottom=0)
+            ax1r_bw.set_ylim(0, W_max * 1.15)
+            ax1_bw.set_xlabel('Zeit (Jahre)', fontsize=12)
+            ax1_bw.set_ylabel('Biomasse B', fontsize=12, color='darkgreen')
+            ax1r_bw.set_ylabel('Bodenfeuchte W (mm)', fontsize=12, color='steelblue')
+            ax1_bw.set_title('Zeitreihen: Vegetation & Wasser', fontsize=13,
+                             fontweight='bold')
+            ax1_bw.tick_params(axis='y', labelcolor='darkgreen')
+            ax1r_bw.tick_params(axis='y', labelcolor='steelblue')
+            ax1_bw.grid(alpha=0.3)
+            if W_star_bw is not None:
+                ax1_bw.axhline(B_star_bw, ls=':', color='darkgreen', lw=1.5,
+                               alpha=0.6, label=f'B* ≈ {B_star_bw:.1f}')
+                ax1r_bw.axhline(W_star_bw, ls=':', color='steelblue', lw=1.5,
+                                alpha=0.6, label=f'W* = {W_star_bw:.1f} mm')
+            ll1_bw, lb1_bw = ax1_bw.get_legend_handles_labels()
+            ll2_bw, lb2_bw = ax1r_bw.get_legend_handles_labels()
+            ax1_bw.legend(ll1_bw + ll2_bw, lb1_bw + lb2_bw, fontsize=9,
+                          loc='upper right')
+
+            # Right: Phase plane with isoclines
+            ax2_bw.plot(sol_bw[:, 1], sol_bw[:, 0], color='purple', lw=2,
+                        alpha=0.75, label='Trajektorie')
+            ax2_bw.scatter([W0_bw], [B0_bw], s=220, c='limegreen',
+                           edgecolors='black', lw=2, zorder=10, label='Start')
+            ax2_bw.scatter([sol_bw[-1, 1]], [sol_bw[-1, 0]], s=300, c='red',
+                           marker='*', edgecolors='black', lw=2, zorder=10,
+                           label='Ende')
+
+            # W-isocline: hump-shaped blue curve (= Beute-Isoklin analog)
+            valid_w_iso = np.isfinite(B_iso_W) & (B_iso_W >= 0)
+            if valid_w_iso.any():
+                ax2_bw.plot(W_arr[valid_w_iso], B_iso_W[valid_w_iso],
+                            color='steelblue', lw=2.5,
+                            label='Wasser-Isoklin dW/dt=0\n(analog: Beute-Isoklin in RM)',
+                            alpha=0.9)
+
+            # B-isocline: vertical line at W* (= Räuber-Isoklin analog)
+            B_ylim_bw = max(float(sol_bw[:, 0].max()) * 1.15,
+                            (B_star_bw or 10) * 2.0, 5.0)
+            if W_star_bw is not None:
+                ax2_bw.axvline(W_star_bw, color='darkgreen', lw=2.5,
+                               label=f'Biomasse-Isoklin dB/dt=0\n'
+                                     f'(W*={W_star_bw:.1f} mm, analog: Räuber-Isoklin)',
+                               alpha=0.9)
+                ax2_bw.scatter([W_star_bw], [B_star_bw], s=450, c='gold',
+                               marker='*', edgecolors='black', lw=2, zorder=11,
+                               label=f'Gleichgewicht ({W_star_bw:.1f}, {B_star_bw:.1f})')
+                if W_hump_bw is not None and W_hump_bw > 0:
+                    ax2_bw.axvline(W_hump_bw, color='steelblue', lw=1.5, ls='--',
+                                   alpha=0.5,
+                                   label=f'Isoklin-Hump = {W_hump_bw:.1f} mm')
+
+            # Direction arrows on trajectory
+            for frac in [0.04, 0.15, 0.35, 0.55, 0.75, 0.92]:
+                idx = int(len(sol_bw) * frac)
+                if idx < len(sol_bw) - 1:
+                    ax2_bw.annotate('',
+                                    xy=(sol_bw[idx + 1, 1], sol_bw[idx + 1, 0]),
+                                    xytext=(sol_bw[idx, 1], sol_bw[idx, 0]),
+                                    arrowprops=dict(arrowstyle='->',
+                                                    color='purple', lw=1.5))
+
+            ax2_bw.set_xlabel('Bodenfeuchte W (mm)', fontsize=12)
+            ax2_bw.set_ylabel('Biomasse B', fontsize=12)
+            ax2_bw.set_title('Phasenraum mit Isoklinien\n'
+                             '(analog zu Räuber-Beute ZNGIs)', fontsize=13,
+                             fontweight='bold')
+            ax2_bw.set_xlim(0, W_max * 1.05)
+            ax2_bw.set_ylim(0, B_ylim_bw)
+            ax2_bw.legend(fontsize=8, loc='upper right')
+            ax2_bw.grid(alpha=0.3)
+
             plt.tight_layout()
-            st.pyplot(fig)
-        
-        st.markdown(f"""
-        <div class="insight-box">
-        <strong>🌿💧 Biotisch-Abiotische Interaktion:</strong>
-        <ul>
-        <li><strong>Gegenseitige Limitierung:</strong>
+            st.pyplot(fig_bw)
+
+        # ── Insight box ──────────────────────────────────────────────────────
+        if W_star_bw is not None:
+            recharge_eq = r_W * W_star_bw * (1.0 - W_star_bw / W_max)
+            transp_eq   = a_W * W_star_bw * B_star_bw / (1.0 + a_W * h_W * W_star_bw)
+            paradox_thr = 2 * W_star_bw + 1.0 / (a_W * h_W)
+            W_hump_show = max(0.0, W_hump_bw) if W_hump_bw is not None else 0.0
+            stable_str  = ("W* < W_hump → stabiler Fokus"
+                           if W_hump_bw is not None and W_hump_bw > 0
+                              and W_star_bw < W_hump_bw
+                           else "W* ≥ W_hump → Grenzzyklus")
+            st.markdown(f"""
+            <div class="insight-box">
+            <strong>🌿💧 Biotisch-Abiotische Interaktion — Gleiches Prinzip, andere Variablen:</strong>
             <ul>
-            <li>Wenig Wasser → Pflanzen können nicht wachsen (abiotisch limitiert biotisch)</li>
-            <li>Viel Pflanzen → Hohe Transpiration → Wasser sinkt (biotisch beeinflusst abiotisch)</li>
+            <li><strong>Isoklinien (wie in Tab 2!):</strong>
+                <ul>
+                <li>🟢 Biomasse-Isoklin (dB/dt=0): <em>senkrechte Linie</em> bei W* = {W_star_bw:.1f} mm — identisch zur Räuber-Isoklin!</li>
+                <li>🔵 Wasser-Isoklin (dW/dt=0): <em>buckelige Kurve</em> — identisch zur Beute-Isoklin in RM!</li>
+                <li>⭐ Gleichgewicht = Schnittpunkt: W* = {W_star_bw:.1f} mm, B* ≈ {B_star_bw:.1f}</li>
+                </ul>
+            </li>
+            <li><strong>Gleichgewichts-Wasserbilanz:</strong> Auffüllung ≈ Transpiration ({recharge_eq:.2f} ≈ {transp_eq:.2f})</li>
+            <li><strong>Stabilität (Hump-Kriterium):</strong> {stable_str} (W_hump = {W_hump_show:.1f} mm)</li>
+            <li><strong>💡 Experiment — Paradox der Erschöpfung:</strong>
+                Senke W_max unter ~{paradox_thr:.0f} mm → Grenzzyklus entsteht
+                (analog zum Paradox of Enrichment in RM)!</li>
+            <li><strong>🌦️ Saisonalität A &gt; 0:</strong> Erzwingt reguläre Jahreszyklen
+                selbst bei stabilem Gleichgewicht — der Phasenraum zeigt eine geschlossene Schleife.</li>
             </ul>
-        </li>
-        <li><strong>Schwellenwert:</strong> Bei W < {wasser_schwelle} mm beginnt Wasser-Stress</li>
-        <li><strong>Gleichgewicht möglich:</strong> Wenn P = ET (Niederschlag = Evapotranspiration)</li>
-        <li><strong>Verbindung zu früheren Konzepten:</strong>
-            <ul>
-            <li>Schritt 2: Logistisches Wachstum (K_bio)</li>
-            <li>Schritt 3: simpleLSTM (Wasser schneller, Biomasse langsamer)</li>
-            <li>Schritt 4: Rückkopplung (Biomasse → Wasser → Biomasse)</li>
-            </ul>
-        </li>
-        </ul>
-        </div>
-        """, unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.warning(f"⚠️ Kein Koexistenz-Gleichgewicht: {regime_bw}. "
+                       "Erhöhe ε oder senke m oder h_W.")
         
         st.markdown("""
         <div class="context-box">
